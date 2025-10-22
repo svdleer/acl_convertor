@@ -1,0 +1,34 @@
+10 remark: Sample ACL for demonstration
+20 remark: Block SNMP from outside
+30 deny udp any any eq snmp
+40 remark: Block NetBIOS
+50 deny udp any any range 135 netbios-ss
+60 deny tcp any any range 135 139
+70 deny tcp any any eq 445
+80 deny udp any any eq 1434
+90 remark: BOOTP/DHCP
+100 permit udp any eq bootpc any eq bootps
+110 remark: Allow internal network access
+120 permit udp 10.0.0.0 0.255.255.255 192.168.1.0 0.0.0.255 eq bootps
+130 permit udp 10.0.0.0 0.255.255.255 192.168.1.0 0.0.0.255 eq tftp
+140 permit udp 10.0.0.0 0.255.255.255 192.168.1.0 0.0.0.255 eq time
+150 permit tcp 10.0.0.0 0.255.255.255 192.168.1.0 0.0.0.255 eq www
+160 permit udp 10.0.0.0 0.255.255.255 192.168.1.0 0.0.0.255 gt 1023
+170 remark: Deny traffic to internal subnet
+180 deny ip 172.16.0.0 0.15.255.255 any
+190 deny ip any 172.16.0.0 0.15.255.255
+200 remark: Management access
+210 permit tcp 10.0.0.0 0.255.255.255 eq ssh 192.168.1.0 0.0.0.255
+220 permit tcp 10.0.0.0 0.255.255.255 eq telnet 192.168.1.0 0.0.0.255
+230 permit tcp 10.0.0.0 0.255.255.255 eq www 192.168.1.0 0.0.0.255
+240 permit tcp 10.0.0.0 0.255.255.255 eq 443 192.168.1.0 0.0.0.255
+250 permit udp 10.0.0.0 0.255.255.255 eq snmp 192.168.1.0 0.0.0.255
+260 remark: Multicast examples
+270 permit ip any host 224.0.0.22
+280 permit ip any 232.17.0.0 0.0.3.255
+290 deny ip any 224.0.0.0 224.0.0.0
+300 remark: ICMP examples
+310 permit icmp any 10.0.0.1 0.255.255.0 icmptype 0
+320 permit icmp 10.0.0.0 0.255.255.255 10.0.0.1 0.255.255.0 icmptype 8
+330 remark: Default deny
+340 deny ip any any
