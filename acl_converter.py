@@ -95,6 +95,9 @@ CISCO_PORT_NAMES = {
     'tftp': '69'
 }
 
+# Reverse mapping: port number to name (for Cisco output)
+PORT_NUMBER_TO_NAME = {v: k for k, v in CISCO_PORT_NAMES.items()}
+
 
 def wildcard_to_subnet_mask(wildcard: str) -> str:
     """Convert Cisco wildcard mask to standard subnet mask."""
@@ -993,7 +996,12 @@ def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False,
                 token = tokens[i]
                 
                 if token == 'range' and i + 3 < len(tokens) and tokens[i + 2] == 'to':
-                    result_tokens.extend([token, tokens[i + 1], tokens[i + 3]])
+                    start_port = tokens[i + 1]
+                    end_port = tokens[i + 3]
+                    # Convert start port number to name if exists
+                    if start_port in PORT_NUMBER_TO_NAME:
+                        start_port = PORT_NUMBER_TO_NAME[start_port]
+                    result_tokens.extend([token, start_port, end_port])
                     i += 4
                     continue
                 
