@@ -109,6 +109,11 @@ def wildcard_to_subnet_mask(wildcard: str) -> str:
         if len(octets) != 4:
             return wildcard
         
+        first_octet = int(octets[0])
+        # If it starts with 255, it's already a subnet mask, not a wildcard
+        if first_octet >= 128:
+            return wildcard
+        
         subnet_octets = []
         for octet in octets:
             wild_int = int(octet)
@@ -257,16 +262,10 @@ def convert_to_casa_format(tokens: List[str]) -> str:
     action = tokens[0]  # permit/deny
     protocol = tokens[1]
     
-    # Check if this involves multicast IPs - if so, use 'all' protocol for Casa
-    has_multicast = False
-    for i, token in enumerate(tokens):
-        if is_multicast_ip(token):
-            has_multicast = True
-            break
-    
-    if has_multicast and protocol == 'ip':
+    # Casa CMTS uses 'all' instead of 'ip'
+    if protocol == 'ip':
         protocol = 'all'
-        tokens[1] = 'all'  # Update tokens too so it's reflected in output
+        tokens[1] = 'all'
     
     # Convert protocol name using Casa CMTS supported protocols
     casa_protocols = get_casa_supported_protocols()
