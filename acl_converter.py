@@ -1048,12 +1048,8 @@ def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False,
                             
                             # Special handling for multicast mask 224.0.0.0
                             if next_token == '224.0.0.0':
-                                # Check position: if source is 'any', use 7.255.255.255, else 15.255.255.255
-                                # Look back to see if source was 'any'
-                                if 'any' in result_tokens[-2:]:  # Check last 2 tokens for 'any'
-                                    wildcard = '7.255.255.255'
-                                else:
-                                    wildcard = '15.255.255.255'
+                                # Convert to standard wildcard: 255 - 224 = 31
+                                wildcard = '31.255.255.255'
                                 result_tokens.extend([token, wildcard])
                                 i += 2
                                 continue
