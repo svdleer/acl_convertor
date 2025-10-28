@@ -996,14 +996,29 @@ def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False,
             while i < len(tokens):
                 token = tokens[i]
                 
+                # Handle range with 'to': range X to Y
                 if token == 'range' and i + 3 < len(tokens) and tokens[i + 2] == 'to':
                     start_port = tokens[i + 1]
                     end_port = tokens[i + 3]
-                    # Convert start port number to name if exists
-                    if start_port in PORT_NUMBER_TO_NAME:
-                        start_port = PORT_NUMBER_TO_NAME[start_port]
+                    # Cisco requires first port in range to be a number
+                    # Convert start port name to number if it's a named port
+                    if start_port in CISCO_PORT_NAMES:
+                        start_port = CISCO_PORT_NAMES[start_port]
+                    # End port can remain as name
                     result_tokens.extend([token, start_port, end_port])
                     i += 4
+                    continue
+                
+                # Handle range without 'to': range X Y
+                if token == 'range' and i + 2 < len(tokens):
+                    start_port = tokens[i + 1]
+                    end_port = tokens[i + 2]
+                    # Cisco requires first port in range to be a number
+                    if start_port in CISCO_PORT_NAMES:
+                        start_port = CISCO_PORT_NAMES[start_port]
+                    # End port can remain as name
+                    result_tokens.extend([token, start_port, end_port])
+                    i += 3
                     continue
                 
                 if token == 'eq' and i + 1 < len(tokens):
