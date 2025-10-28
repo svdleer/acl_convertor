@@ -869,7 +869,6 @@ def convert_acl_file(input_text: str, remove_line_numbers: bool = False,
         date_remark = f"{current_line_num} {date_remark}"
         current_line_num += line_increment
     converted_lines.append(date_remark)
-    converted_lines.append("")  # Add blank line after version remark
     
     for line in lines:
         if not line.strip():
@@ -951,7 +950,6 @@ def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False,
         date_remark = f"{current_line_num} {date_remark}"
         current_line_num += line_increment
     converted_lines.append(date_remark)
-    converted_lines.append("")  # Add blank line after version remark
     
     for line in lines:
         line = line.strip()
@@ -1124,7 +1122,6 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
     
     # Add initial configure statement
     converted_lines.append(f"configure access-list 100 name {acl_name}")
-    converted_lines.append("")  # Add blank line after ACL name
     
     for line in lines:
         line = line.strip()
