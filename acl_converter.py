@@ -1045,10 +1045,10 @@ def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False,
                         try:
                             first_octet = int(octets[0])
                             
-                            # Special handling for multicast mask 224.0.0.0
-                            if next_token == '224.0.0.0':
-                                # Convert to standard wildcard: 255 - 224 = 31
-                                wildcard = '31.255.255.255'
+                            # Special handling for multicast subnet mask 240.0.0.0 (RFC 3171: 224.0.0.0/4)
+                            if next_token == '240.0.0.0':
+                                # Convert to wildcard: 255 - 240 = 15
+                                wildcard = '15.255.255.255'
                                 result_tokens.extend([token, wildcard])
                                 i += 2
                                 continue
