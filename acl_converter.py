@@ -856,19 +856,20 @@ def convert_acl_line(line: str, remove_line_numbers: bool = False,
 
 def convert_acl_file(input_text: str, remove_line_numbers: bool = False,
                     renumber_lines: bool = False, start_line: int = 10,
-                    line_increment: int = 10) -> str:
+                    line_increment: int = 10, version: str = None) -> str:
     """Convert an entire ACL configuration to Casa CMTS format."""
     lines = input_text.strip().split('\n')
     converted_lines = []
     current_line_num = start_line
     
     # Add date header remark at the beginning
-    today = datetime.now().strftime('%Y%m%d')
+    today = version if version else datetime.now().strftime('%Y%m%d')
     date_remark = f'remark "cable-inlist version {today}"'
     if not remove_line_numbers:
         date_remark = f"{current_line_num} {date_remark}"
         current_line_num += line_increment
     converted_lines.append(date_remark)
+    converted_lines.append("")  # Add blank line after version remark
     
     for line in lines:
         if not line.strip():
@@ -938,18 +939,19 @@ def combine_consecutive_remarks(lines: List[str]) -> List[str]:
 
 def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False, 
                             renumber_lines: bool = False, start_line: int = 10, 
-                            line_increment: int = 10) -> str:
+                            line_increment: int = 10, version: str = None) -> str:
     """Convert ACL to standard Cisco format."""
     converted_lines = []
     current_line_num = start_line
     
     # Add date header remark at the beginning
-    today = datetime.now().strftime('%Y%m%d')
+    today = version if version else datetime.now().strftime('%Y%m%d')
     date_remark = f'remark "cable-inlist version {today}"'
     if not remove_line_numbers:
         date_remark = f"{current_line_num} {date_remark}"
         current_line_num += line_increment
     converted_lines.append(date_remark)
+    converted_lines.append("")  # Add blank line after version remark
     
     for line in lines:
         line = line.strip()
@@ -1095,18 +1097,19 @@ def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False,
 
 def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False, 
                             renumber_lines: bool = False, start_line: int = 10, 
-                            line_increment: int = 10) -> str:
+                            line_increment: int = 10, version: str = None) -> str:
     """Convert ACL to E6000 format with configure statements and sequence numbers."""
     converted_lines = []
     current_line_num = start_line
     sequence_num = start_line
     
     # Generate ACL name with today's date
-    today = datetime.now().strftime('%Y%m%d')
+    today = version if version else datetime.now().strftime('%Y%m%d')
     acl_name = f"cable-inlist-{today}"
     
     # Add initial configure statement
     converted_lines.append(f"configure access-list 100 name {acl_name}")
+    converted_lines.append("")  # Add blank line after ACL name
     
     for line in lines:
         line = line.strip()
@@ -1228,6 +1231,8 @@ Examples:
                        help='Starting line number for renumbering (default: 10)')
     parser.add_argument('--increment', type=int, default=10,
                        help='Line number increment (default: 10)')
+    parser.add_argument('--version', type=str, default=None,
+                       help='Override version date (format: YYYYMMDD, default: today)')
     
     args = parser.parse_args()
     
@@ -1268,7 +1273,8 @@ Examples:
                 remove_line_numbers=args.remove_lines,
                 renumber_lines=args.renumber,
                 start_line=args.start,
-                line_increment=args.increment
+                line_increment=args.increment,
+                version=args.version
             )
         elif args.e6000:
             # Convert to E6000 format
@@ -1278,7 +1284,8 @@ Examples:
                 remove_line_numbers=args.remove_lines,
                 renumber_lines=args.renumber,
                 start_line=args.start,
-                line_increment=args.increment
+                line_increment=args.increment,
+                version=args.version
             )
         else:
             # Convert to Casa CMTS format (default)
@@ -1287,7 +1294,8 @@ Examples:
                 remove_line_numbers=args.remove_lines,
                 renumber_lines=args.renumber,
                 start_line=args.start,
-                line_increment=args.increment
+                line_increment=args.increment,
+                version=args.version
             )
     except Exception as e:
         print(f"Error converting ACL: {e}", file=sys.stderr)
