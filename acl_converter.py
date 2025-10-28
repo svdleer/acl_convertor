@@ -892,48 +892,8 @@ def convert_acl_file(input_text: str, remove_line_numbers: bool = False,
 
 
 def combine_consecutive_remarks(lines: List[str]) -> List[str]:
-    """Combine consecutive remark lines into single lines up to 80 characters."""
-    result = []
-    i = 0
-    
-    while i < len(lines):
-        line = lines[i].strip()
-        
-        # Check if this is a remark line
-        if line.startswith('remark '):
-            combined_remark = line
-            j = i + 1
-            
-            # Look ahead for consecutive remark lines
-            while j < len(lines):
-                next_line = lines[j].strip()
-                if not next_line.startswith('remark '):
-                    break
-                
-                # Extract the remark content (remove 'remark "' and trailing '"')
-                next_content = next_line[7:].strip()  # Remove 'remark '
-                if next_content.startswith('"') and next_content.endswith('"'):
-                    next_content = next_content[1:-1]  # Remove quotes
-                
-                current_content = combined_remark[7:].strip()  # Remove 'remark '
-                if current_content.startswith('"') and current_content.endswith('"'):
-                    current_content = current_content[1:-1]  # Remove quotes
-                
-                # Check if combining would exceed 80 characters
-                potential_combined = f'remark "{current_content} {next_content}"'
-                if len(potential_combined) <= 80:
-                    combined_remark = potential_combined
-                    j += 1
-                else:
-                    break
-            
-            result.append(combined_remark)
-            i = j
-        else:
-            result.append(line)
-            i += 1
-    
-    return result
+    """Keep remark lines separate (combining disabled)."""
+    return lines
 
 
 def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False, 
