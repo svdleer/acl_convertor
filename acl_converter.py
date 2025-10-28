@@ -962,10 +962,12 @@ def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False,
                     start_port = tokens[i + 1]
                     end_port = tokens[i + 3]
                     # For UDP: convert start port name to number
-                    # For TCP: keep start port name
+                    # For TCP: convert start port number to name (if exists)
                     if protocol == 'udp' and start_port in CISCO_PORT_NAMES:
                         start_port = CISCO_PORT_NAMES[start_port]
-                    # End port can remain as name
+                    elif protocol == 'tcp' and start_port in PORT_NUMBER_TO_NAME:
+                        start_port = PORT_NUMBER_TO_NAME[start_port]
+                    # End port can remain as is
                     result_tokens.extend([token, start_port, end_port])
                     i += 4
                     continue
@@ -975,10 +977,12 @@ def convert_to_cisco_format(lines: List[str], remove_line_numbers: bool = False,
                     start_port = tokens[i + 1]
                     end_port = tokens[i + 2]
                     # For UDP: convert start port name to number
-                    # For TCP: keep start port name
+                    # For TCP: convert start port number to name (if exists)
                     if protocol == 'udp' and start_port in CISCO_PORT_NAMES:
                         start_port = CISCO_PORT_NAMES[start_port]
-                    # End port can remain as name
+                    elif protocol == 'tcp' and start_port in PORT_NUMBER_TO_NAME:
+                        start_port = PORT_NUMBER_TO_NAME[start_port]
+                    # End port can remain as is
                     result_tokens.extend([token, start_port, end_port])
                     i += 3
                     continue
