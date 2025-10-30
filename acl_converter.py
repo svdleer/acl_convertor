@@ -1141,7 +1141,7 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
                 
                 # E6000 supports ssh as a named port, so don't convert it
                 
-                # Convert ICMP type names to numbers for E6000
+                # Convert ICMP type names to numbers for E6000 (no 'type' keyword)
                 if token == 'icmptype' and i + 1 < len(tokens):
                     icmp_name_to_type = {
                         'echo-reply': '0',
@@ -1151,12 +1151,12 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
                     }
                     next_token = tokens[i + 1]
                     if next_token in icmp_name_to_type:
-                        result_tokens.extend(['type', icmp_name_to_type[next_token]])
+                        result_tokens.append(icmp_name_to_type[next_token])
                         i += 2
                         continue
                     else:
-                        # Keep as type <number>
-                        result_tokens.extend(['type', next_token])
+                        # Just the number, no 'type' keyword
+                        result_tokens.append(next_token)
                         i += 2
                         continue
                 
@@ -1168,7 +1168,7 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
                         'echo': '8',
                         'time-exceeded': '11'
                     }
-                    result_tokens.extend(['type', icmp_name_to_type[token]])
+                    result_tokens.append(icmp_name_to_type[token])
                     i += 1
                     continue
                 
@@ -1197,6 +1197,14 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
             # Convert 'all' back to 'ip'
             if len(result_tokens) > 1 and result_tokens[1] == 'all':
                 result_tokens[1] = 'ip'
+            
+            # Remove trailing 'any' if there are three consecutive 'any' at the end
+            # E6000 format: permit/deny proto src mask dest mask (only 2 any's, not 3)
+            if (len(result_tokens) >= 3 and 
+                result_tokens[-1] == 'any' and 
+                result_tokens[-2] == 'any' and 
+                result_tokens[-3] == 'any'):
+                result_tokens.pop()
             
             content = ' '.join(result_tokens)
         
