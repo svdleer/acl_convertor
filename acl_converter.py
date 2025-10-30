@@ -1159,6 +1159,24 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
                         i += 2
                         continue
                 
+                # Convert subnet masks to wildcard masks for E6000 (like Cisco)
+                if (i > 0 and re.match(r'\d+\.\d+\.\d+\.\d+', token) and 
+                    i + 1 < len(tokens) and re.match(r'\d+\.\d+\.\d+\.\d+', tokens[i + 1])):
+                    # This looks like an IP address followed by a mask
+                    next_token = tokens[i + 1]
+                    octets = next_token.split('.')
+                    if len(octets) == 4:
+                        try:
+                            first_octet = int(octets[0])
+                            # If first octet is 128-255, it's a subnet mask - convert to wildcard
+                            if first_octet >= 128:
+                                wildcard_mask = subnet_to_wildcard(next_token)
+                                result_tokens.extend([token, wildcard_mask])
+                                i += 2
+                                continue
+                        except ValueError:
+                            pass
+                
                 result_tokens.append(token)
                 i += 1
             
