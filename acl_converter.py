@@ -1141,23 +1141,36 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
                 
                 # E6000 supports ssh as a named port, so don't convert it
                 
-                # Convert icmptype numbers to names
+                # Convert ICMP type names to numbers for E6000
                 if token == 'icmptype' and i + 1 < len(tokens):
-                    icmp_type_to_name = {
-                        '0': 'echo-reply',
-                        '3': 'unreachable',
-                        '8': 'echo',
-                        '11': 'time-exceeded'
+                    icmp_name_to_type = {
+                        'echo-reply': '0',
+                        'unreachable': '3',
+                        'echo': '8',
+                        'time-exceeded': '11'
                     }
                     next_token = tokens[i + 1]
-                    if next_token in icmp_type_to_name:
-                        result_tokens.append(icmp_type_to_name[next_token])
+                    if next_token in icmp_name_to_type:
+                        result_tokens.extend(['type', icmp_name_to_type[next_token]])
                         i += 2
                         continue
                     else:
-                        result_tokens.extend([token, next_token])
+                        # Keep as type <number>
+                        result_tokens.extend(['type', next_token])
                         i += 2
                         continue
+                
+                # Handle standalone ICMP type names (without 'icmptype' keyword)
+                if token in ['echo-reply', 'unreachable', 'echo', 'time-exceeded']:
+                    icmp_name_to_type = {
+                        'echo-reply': '0',
+                        'unreachable': '3',
+                        'echo': '8',
+                        'time-exceeded': '11'
+                    }
+                    result_tokens.extend(['type', icmp_name_to_type[token]])
+                    i += 1
+                    continue
                 
                 # Convert subnet masks to wildcard masks for E6000 (like Cisco)
                 if (i > 0 and re.match(r'\d+\.\d+\.\d+\.\d+', token) and 
