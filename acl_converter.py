@@ -1168,8 +1168,9 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
                     if len(octets) == 4:
                         try:
                             first_octet = int(octets[0])
-                            # If first octet is 128-255, it's a subnet mask - convert to wildcard
-                            if first_octet >= 128:
+                            # If first octet is 240-255, it's a subnet mask - convert to wildcard
+                            # Wildcard masks start with 0-31, regular IPs can be anything
+                            if first_octet >= 240:
                                 wildcard_mask = subnet_to_wildcard(next_token)
                                 result_tokens.extend([token, wildcard_mask])
                                 i += 2
