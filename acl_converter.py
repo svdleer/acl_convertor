@@ -1220,6 +1220,10 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
             
             content = ' '.join(result_tokens)
         
+        # Add spacing for alignment: 2 spaces before "deny" to align with "permit"
+        if content.startswith('deny '):
+            content = '  ' + content
+        
         # Prefix each line with configure statement and optionally sequence number
         if remove_line_numbers:
             line_content = f"configure access-list {acl_name} {content}"
