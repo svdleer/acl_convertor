@@ -1088,6 +1088,15 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
     today = version if version else datetime.now().strftime('%Y%m%d')
     acl_name = f"cable-inlist-{today}"
     
+    # Calculate max sequence number for padding alignment (if using line numbers)
+    if not remove_line_numbers:
+        # Count non-empty lines to estimate max sequence number
+        non_empty_lines = [l for l in lines if l.strip()]
+        max_seq_num = start_line + (len(non_empty_lines) - 1) * line_increment
+        seq_width = len(str(max_seq_num))
+    else:
+        seq_width = 0
+    
     # Add initial configure statement
     converted_lines.append(f"configure access-list 100 name {acl_name}")
     
@@ -1228,7 +1237,9 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
         if remove_line_numbers:
             line_content = f"configure access-list {acl_name} {content}"
         else:
-            line_content = f"configure access-list {acl_name} {sequence_num} {content}"
+            # Pad sequence number to align permit/deny statements
+            padded_seq = str(sequence_num).rjust(seq_width)
+            line_content = f"configure access-list {acl_name} {padded_seq} {content}"
             sequence_num += line_increment
         converted_lines.append(line_content)
     
