@@ -1129,10 +1129,15 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
             else:
                 remark_text = ' '.join(tokens[1:]).strip()
             
-            # Strip surrounding quotes if present and re-wrap
+            # Strip surrounding quotes if present
             if remark_text.startswith('"') and remark_text.endswith('"'):
                 remark_text = remark_text[1:-1]
             remark_text = remark_text.strip()
+            
+            # Skip the "cable-inlist version" remark for E6000
+            if 'cable-inlist version' in remark_text:
+                continue
+            
             content = f'remark "{remark_text}"'
         else:
             # Process non-remark lines
