@@ -1198,13 +1198,25 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
             if len(result_tokens) > 1 and result_tokens[1] == 'all':
                 result_tokens[1] = 'ip'
             
-            # Remove trailing 'any' if there are three consecutive 'any' at the end
-            # E6000 format: permit/deny proto src mask dest mask (only 2 any's, not 3)
-            if (len(result_tokens) >= 3 and 
-                result_tokens[-1] == 'any' and 
-                result_tokens[-2] == 'any' and 
-                result_tokens[-3] == 'any'):
-                result_tokens.pop()
+            # Check if line contains multicast IP addresses
+            has_multicast = False
+            for token in result_tokens:
+                if is_multicast_ip(token):
+                    has_multicast = True
+                    break
+            
+            # Remove trailing 'any' tokens for E6000 format
+            if has_multicast:
+                # Multicast lines: remove all trailing 'any' tokens
+                while result_tokens and result_tokens[-1] == 'any':
+                    result_tokens.pop()
+            else:
+                # Non-multicast lines: remove only if there are three consecutive 'any' at the end
+                if (len(result_tokens) >= 3 and 
+                    result_tokens[-1] == 'any' and 
+                    result_tokens[-2] == 'any' and 
+                    result_tokens[-3] == 'any'):
+                    result_tokens.pop()
             
             content = ' '.join(result_tokens)
         
