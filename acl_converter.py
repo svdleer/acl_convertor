@@ -1207,18 +1207,36 @@ def convert_to_e6000_format(lines: List[str], remove_line_numbers: bool = False,
             if len(result_tokens) > 1 and result_tokens[1] == 'all':
                 result_tokens[1] = 'ip'
             
-            # Check if line contains multicast IP addresses
+            # Check if line contains multicast IP addresses and handle special cases
             has_multicast = False
-            for token in result_tokens:
+            multicast_host_index = -1
+            for i, token in enumerate(result_tokens):
                 if is_multicast_ip(token):
                     has_multicast = True
+                    # Check if this multicast IP has mask 0.0.0.0 (host) next to it
+                    if i + 1 < len(result_tokens) and result_tokens[i + 1] == '0.0.0.0':
+                        multicast_host_index = i
                     break
+            
+            # Handle multicast host (IP with mask 0.0.0.0) - convert to 'host' keyword
+            if multicast_host_index >= 0:
+                multicast_ip = result_tokens[multicast_host_index]
+                # Replace "ip mask" with "host ip"
+                result_tokens[multicast_host_index] = 'host'
+                result_tokens[multicast_host_index + 1] = multicast_ip
             
             # Remove trailing 'any' tokens for E6000 format
             if has_multicast:
-                # Multicast lines: remove all trailing 'any' tokens
-                while result_tokens and result_tokens[-1] == 'any':
-                    result_tokens.pop()
+                # Check if it's a deny with only source (deny ip multicast mask with nothing after)
+                # Format: deny ip <multicast> <mask>
+                if (result_tokens[0] == 'deny' and len(result_tokens) == 4 and
+                    is_multicast_ip(result_tokens[2])):
+                    # Add 'any' at the end for deny multicast with just source
+                    result_tokens.append('any')
+                else:
+                    # Other multicast lines: remove all trailing 'any' tokens
+                    while result_tokens and result_tokens[-1] == 'any':
+                        result_tokens.pop()
             else:
                 # Non-multicast lines: remove only if there are three consecutive 'any' at the end
                 if (len(result_tokens) >= 3 and 
